@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://example.org/nature-home" version="1.0.0" viewmodes="fullscreen">
+  <tizen:application id="N4tureH0me.NatureHome" package="N4tureH0me" required_version="6.0" />
+  <tizen:profile name="tv-samsung" />
+  <tizen:metadata key="http://samsung.com/tv/metadata/devel.api.version" value="6.0" />
+  <name>Nature Home</name>
+  <content src="index.html" />
+  <icon src="icon.png" />
+  <tizen:privilege name="http://tizen.org/privilege/appmanager.launch" />
+  <tizen:privilege name="http://tizen.org/privilege/application.info" />
+</widget>

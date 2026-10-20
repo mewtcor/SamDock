@@ -1,0 +1,14 @@
+development/
+references/
+*.wgt
+*.zip
+IMG_8222-share.jpg
+.chrome-headless/
+.edge-headless/
+.env*
+*.pem
+*.p12
+*.pfx
+*.key
+Thumbs.db
+.DS_Store

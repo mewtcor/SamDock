@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nature Home</title>
+  <style>
+    :root { color-scheme: dark; font-family: Arial, Helvetica, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; overflow: hidden; background: #06111b; color: white; }
+    .wallpaper, .shade { position: fixed; top: 0; right: 0; bottom: 0; left: 0; }
+    .wallpaper { background-size: cover; background-position: center; opacity: 0; transition: opacity 2s ease; }
+    .wallpaper.active { opacity: 1; }
+    .shade { background: linear-gradient(0deg, rgba(3,8,18,.94), rgba(3,8,18,.38) 40%, rgba(3,8,18,.2) 76%), linear-gradient(90deg, rgba(3,8,18,.32), transparent 65%); }
+    main { position: relative; height: 100vh; padding: 5.1vh 5.4vw 5vh; display: flex; flex-direction: column; }
+    header { display: flex; align-items: start; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: .6vw; font-weight: 600; letter-spacing: -.02em; font-size: 1.45vw; }
+    .brand-mark { width: 1.35vw; height: 1.35vw; border: 2px solid white; border-radius: 60% 10% 60% 10%; transform: rotate(-35deg); }
+    .clock { text-align: right; font-size: 1.4vw; line-height: 1; font-weight: 600; }
+    .clock small { display: block; padding-top: .55vw; font-size: .78vw; letter-spacing: .02em; font-weight: 400; }
+    .shelf { margin-top: auto; margin-bottom: 5.6vh; min-height: 17vh; }
+    .shelf h1 { font-size: 4.8vw; line-height: 1.05; font-weight: 600; letter-spacing: -.055em; margin: 0 0 .7vw; text-shadow: 0 2px 22px #0005; }
+    .shelf p { font-size: 1.25vw; margin: 0; color: #eef2f6; }
+    .dock-label { font-size: 1.1vw; font-weight: 600; margin: 0 0 1.4vw .2vw; }
+    .dock { display: flex; width: 100%; align-items: flex-start; padding: 1.2vw 1.5vw 2.4vw; border: 1px solid rgba(255,255,255,.2); border-radius: 1.8vw; background: rgba(8,13,23,.48); }
+    .tile { border: 0; color: white; flex: 1; min-width: 0; height: 8.3vw; border-radius: 1vw; padding: 0; display: flex; justify-content: center; align-items: center; font: inherit; position: relative; outline: none; box-shadow: 0 .8vw 1.8vw #0006; transition: transform .18s ease, box-shadow .18s ease; }
+    .tile + .tile { margin-left: 1.7vw; }
+    .tile:focus, .tile:hover { transform: scale(1.04); box-shadow: 0 0 0 .25vw white, 0 1.2vw 2.4vw #0009; z-index: 2; }
+    .tile .symbol { font-size: 3.1vw; font-weight: 700; letter-spacing: -.08em; }
+    .tile.prime .symbol { font-size: 2.25vw; letter-spacing: -.08em; }
+    .tile.disney .symbol, .tile.appletv .symbol { font-size: 2.7vw; }
+    .tile .name { position: absolute; top: calc(100% + .62vw); left: 0; width: 100%; text-align: center; font-size: 1.05vw; font-weight: 600; text-shadow: 0 1px 5px #000a; }
+    .tile .status { display: none; }
+    .tile.stremio { background: linear-gradient(145deg, #614ed3, #281a74); }
+    .tile.youtube { background: linear-gradient(145deg, #ff3434, #b90816); }
+    .tile.netflix { background: linear-gradient(145deg, #202020, #050505); }
+    .tile.netflix .symbol { color: #e50914; }
+    .tile.prime { background: linear-gradient(145deg, #278dcc, #075182); }
+    .tile.disney { background: linear-gradient(145deg, #253c9b, #07153f); }
+    .tile.appletv { background: linear-gradient(145deg, #292a2c, #050505); }
+    .tile.missing { opacity: .55; }
+    footer { display: flex; justify-content: space-between; color: #e0e5e9; font-size: .85vw; margin-top: 2.1vw; }
+    #notice { position: fixed; z-index: 10; left: 50%; bottom: 21%; transform: translateX(-50%); background: #11283b; border: 1px solid #a8d2da; border-radius: .7vw; padding: 1vw 1.4vw; font-size: 1vw; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    #notice.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="wallpaper active" style="background-image:url('wallpaper-lake.png')"></div>
+  <div class="wallpaper" style="background-image:url('wallpaper-coast.png')"></div>
+  <div class="wallpaper" style="background-image:url('wallpaper-forest.png')"></div>
+  <div class="shade"></div>
+  <main>
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span> Home</div>
+      <div class="clock"><span id="time">--:--</span><small id="date">&nbsp;</small></div>
+    </header>
+    <section class="shelf">
+      <h1 id="shelfTitle">Stremio</h1>
+      <p id="shelfDescription">Your films and shows.</p>
+    </section>
+    <section>
+      <div class="dock-label">Apps</div>
+      <div class="dock" id="dock"></div>
+    </section>
+    <footer><span>◀ ▶ Browse &nbsp;&nbsp; Select Open</span><span>Nature Home</span></footer>
+  </main>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <script>
+    var favorites = [
+      { name: 'Stremio', symbol: 'S', brand: 'stremio', description: 'Your films and shows.', matches: ['stremio'] },
+      { name: 'YouTube', symbol: '▶', brand: 'youtube', description: 'Watch what you love.', matches: ['youtube'] },
+      { name: 'Netflix', symbol: 'N', brand: 'netflix', description: 'Stories for every mood.', matches: ['netflix'] },
+      { name: 'Prime Video', symbol: 'prime video', brand: 'prime', description: 'Films, series and more.', matches: ['prime video', 'amazon prime'] },
+      { name: 'Disney+', symbol: 'Disney+', brand: 'disney', description: 'A world of stories.', matches: ['disney+'] },
+      { name: 'Apple TV', symbol: 'tv+', brand: 'appletv', description: 'Originals and favourites.', matches: ['apple tv', 'appletv'] }
+    ];
+    var installed = [];
+    var isTv = !!(window.tizen && tizen.application);
+    var dock = document.getElementById('dock');
+    var notice = document.getElementById('notice');
+    var noticeTimer;
+
+    function showNotice(message) {
+      notice.textContent = message;
+      notice.className = 'show';
+      clearTimeout(noticeTimer);
+      noticeTimer = setTimeout(function () { notice.className = ''; }, 4000);
+    }
+    function appFor(item) {
+      return installed.find(function (app) {
+        return item.matches.indexOf((app.name || '').toLowerCase()) !== -1;
+      }) || installed.find(function (app) {
+        var name = (app.name || '').toLowerCase();
+        return item.matches.some(function (part) { return name.indexOf(part) !== -1; });
+      });
+    }
+    function launch(item) {
+      if (!isTv) { showNotice('PC preview. App launching works on the TV.'); return; }
+      var app = appFor(item);
+      if (!app) { showNotice(item.name + ' is not installed on this TV. Find it in Samsung Apps.'); return; }
+      try {
+        tizen.application.launch(app.id, function () {}, function (error) {
+          showNotice('Could not open ' + item.name + ': ' + error.message);
+        });
+      } catch (error) { showNotice('Could not open ' + item.name + ': ' + error.message); }
+    }
+    function renderDock() {
+      dock.textContent = '';
+      favorites.forEach(function (item) {
+        var button = document.createElement('button');
+        var app = appFor(item);
+        button.className = 'tile ' + item.brand + (isTv && !app ? ' missing' : '');
+        button.type = 'button';
+        button.innerHTML = '<span class="symbol"></span><span><span class="name"></span><span class="status"></span></span>';
+        button.querySelector('.symbol').textContent = item.symbol;
+        button.querySelector('.name').textContent = item.name;
+        button.querySelector('.status').textContent = isTv ? (app ? 'Open app' : 'Not installed') : 'Preview';
+        button.addEventListener('click', function () { launch(item); });
+        button.addEventListener('focus', function () {
+          document.getElementById('shelfTitle').textContent = item.name;
+          document.getElementById('shelfDescription').textContent = isTv && !app ? 'Not installed on this TV' : item.description;
+        });
+        dock.appendChild(button);
+      });
+      dock.querySelector('button').focus();
+    }
+    function updateClock() {
+      var now = new Date();
+      document.getElementById('time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('date').textContent = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    document.addEventListener('keydown', function (event) {
+      if (event.keyCode === 37 || event.keyCode === 39) {
+        var buttons = Array.prototype.slice.call(dock.querySelectorAll('button'));
+        var index = buttons.indexOf(document.activeElement);
+        buttons[(index + (event.keyCode === 39 ? 1 : -1) + buttons.length) % buttons.length].focus();
+        event.preventDefault();
+      }
+      if (event.keyCode === 13 && document.activeElement.tagName === 'BUTTON') {
+        event.preventDefault();
+        document.activeElement.click();
+      }
+    });
+    updateClock();
+    setInterval(updateClock, 10000);
+    var wallpapers = document.querySelectorAll('.wallpaper');
+    var currentWallpaper = 0;
+    setInterval(function () {
+      wallpapers[currentWallpaper].classList.remove('active');
+      currentWallpaper = (currentWallpaper + 1) % wallpapers.length;
+      wallpapers[currentWallpaper].classList.add('active');
+    }, 60000);
+    renderDock();
+    if (isTv) {
+      try { tizen.application.getAppsInfo(function (apps) { installed = apps; renderDock(); }, function () { showNotice('Could not read installed apps.'); }); }
+      catch (error) { showNotice('Could not read installed apps: ' + error.message); }
+    }
+  </script>
+</body>
+</html>
